@@ -3,12 +3,22 @@ import './App.css';
 import { SearchOutlined } from '@ant-design/icons';
 import { getSearch } from './apis/search';
 import { SearchItem } from './apis/search';
+import { useCaching } from './hooks/useCaching';
 
 function App() {
+	const { getCache, saveCache } = useCaching();
 	const [searchList, setSearchList] = useState<SearchItem[]>([]);
+
 	async function getSearchList(e: any) {
-		const data = await getSearch(e.target.value);
-		setSearchList(data);
+		const query = e.target.value;
+		const cache = getCache(query);
+		if (cache) {
+			setSearchList(cache);
+		} else {
+			const data = await getSearch(query);
+			saveCache(query, data);
+			setSearchList(data);
+		}
 	}
 
 	return (
