@@ -21,6 +21,15 @@ function App() {
 		}
 	}
 
+	let timer: ReturnType<typeof setTimeout>;
+
+	function debounce(e: any) {
+		if (timer) clearTimeout(timer);
+		timer = setTimeout(() => {
+			getSearchList(e);
+		}, 500);
+	}
+
 	return (
 		<div className='App' style={{ background: '#cae9ff' }}>
 			<h1>국내 모든 임상시험 검색하고 온라인으로 참여하기</h1>
@@ -28,7 +37,7 @@ function App() {
 				<div>
 					<SearchOutlined />
 					<input
-						onChange={getSearchList}
+						onKeyDown={debounce}
 						type='search'
 						name='search'
 						placeholder='질환명을 입력해 주세요.'
