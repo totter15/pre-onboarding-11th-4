@@ -43,7 +43,9 @@ function App() {
 		const up = 38;
 		const down = 40;
 		if (e.keyCode === up) {
-			selectIndex < 1 ? setSelectIndex(10) : setSelectIndex((prev) => prev - 1);
+			selectIndex <= 1
+				? setSelectIndex(10)
+				: setSelectIndex((prev) => prev - 1);
 		}
 		if (e.keyCode === down) {
 			selectIndex >= searchList.length - 1
@@ -65,7 +67,7 @@ function App() {
 				온라인으로 참여하기
 			</TitleBox>
 			<SearchInput onKeyDown={onKeyDown} />
-			<RecommendList searchList={searchList} />
+			<RecommendList searchList={searchList} selectIndex={selectIndex} />
 		</AppBox>
 	);
 }
