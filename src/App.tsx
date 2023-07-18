@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import './App.css';
-import { SearchOutlined } from '@ant-design/icons';
 import { getSearch } from './apis/search';
 import { SearchItem } from './apis/search';
 import { useCaching } from './hooks/useCaching';
+import RecommendList from './components/RecommendList';
+import SearchInput from './components/SearchInput';
+import { AppBox, TitleBox } from './styles/App.style';
 
 function App() {
 	const { getCache, saveCache } = useCaching();
 	const [searchList, setSearchList] = useState<SearchItem[]>([]);
+	const [selectIndex, setSelectIndex] = useState<number>(-1);
+	const [cacheKey, setCacheKey] = useState<string>('');
 
-	async function getSearchList(e: any) {
-		const query = e.target.value;
+	async function getSearchList(query: string) {
+		setCacheKey(query);
 		const cache = getCache(query);
 		if (cache) {
 			setSearchList(cache);
@@ -18,6 +21,7 @@ function App() {
 			const data = await getSearch(query);
 			saveCache(query, data);
 			setSearchList(data);
+			setSelectIndex(-1);
 		}
 	}
 
@@ -26,33 +30,39 @@ function App() {
 	function debounce(e: any) {
 		if (timer) clearTimeout(timer);
 		timer = setTimeout(() => {
-			getSearchList(e);
+			const query = e.target.value;
+			cacheKey !== query && getSearchList(query);
 		}, 500);
 	}
 
+	function pressDown(e: any) {
+		const up = 38;
+		const down = 40;
+		if (e.keyCode === up) {
+			selectIndex < 1 ? setSelectIndex(10) : setSelectIndex((prev) => prev - 1);
+		}
+		if (e.keyCode === down) {
+			selectIndex >= searchList.length - 1
+				? setSelectIndex(0)
+				: setSelectIndex((prev) => prev + 1);
+		}
+	}
+
+	function onKeyDown(e: any) {
+		debounce(e);
+		pressDown(e);
+	}
+
 	return (
-		<div className='App' style={{ background: '#cae9ff' }}>
-			<h1>국내 모든 임상시험 검색하고 온라인으로 참여하기</h1>
-			<form>
-				<div>
-					<SearchOutlined />
-					<input
-						onKeyDown={debounce}
-						type='search'
-						name='search'
-						placeholder='질환명을 입력해 주세요.'
-					/>
-					<button>
-						<SearchOutlined />
-					</button>
-				</div>
-			</form>
-			<ul>
-				{searchList?.map((search) => (
-					<li>{search.sickNm}</li>
-				))}
-			</ul>
-		</div>
+		<AppBox>
+			<TitleBox>
+				국내 모든 임상시험 검색하고
+				<br />
+				온라인으로 참여하기
+			</TitleBox>
+			<SearchInput onKeyDown={onKeyDown} />
+			<RecommendList searchList={searchList} />
+		</AppBox>
 	);
 }
 
