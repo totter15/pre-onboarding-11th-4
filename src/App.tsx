@@ -13,6 +13,10 @@ function App() {
 	const [cacheKey, setCacheKey] = useState<string>('');
 
 	async function getSearchList(query: string) {
+		if (query === '') {
+			setSearchList([]);
+			return;
+		}
 		setCacheKey(query);
 		const cache = getCache(query);
 		if (cache) {

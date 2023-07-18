@@ -1,12 +1,27 @@
 import { SearchItem } from '../apis/search';
+import {
+	RecommendCard,
+	RecommendListBox,
+	RecommendListTitle,
+} from '../styles/RecommendList.style';
+import { SearchOutlined } from '@ant-design/icons';
 
 function RecommendList({ searchList }: { searchList: SearchItem[] }) {
 	return (
-		<ul>
+		<RecommendListBox>
+			<RecommendListTitle>
+				{!!searchList.length ? '추천 검색어' : '검색어 없음'}
+			</RecommendListTitle>
+
 			{searchList?.map((search) => (
-				<li>{search.sickNm}</li>
+				<RecommendCard>
+					<SearchOutlined
+						style={{ color: '#A7AFB7', fontSize: '1.125rem', marginRight: 10 }}
+					/>
+					{search.sickNm}
+				</RecommendCard>
 			))}
-		</ul>
+		</RecommendListBox>
 	);
 }
 

@@ -3,10 +3,11 @@ import { styled } from 'styled-components';
 export const FormBox = styled.form`
 	margin: 0 auto;
 	margin-bottom: 10px;
-	width: 480px;
+	width: 500px;
 	display: flex;
 	align-items: center;
 	padding: 10px 10px 10px 24px;
+	box-sizing: border-box;
 	background: white;
 	border-radius: 45px;
 	&:focus-within {
