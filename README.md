@@ -1,46 +1,136 @@
-# Getting Started with Create React App
+# 추천 검색창 구현
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**참고 사이트**
+[한국임상정보](https://clinicaltrialskorea.com/)
 
-## Available Scripts
+<img width="80%" src="https://github.com/totter15/pre-onboarding-11th-4/assets/71440070/b63af331-8094-453d-a19b-3cd1324415fe"/>
 
-In the project directory, you can run:
+# 구현 목표
 
-### `npm start`
+- 질환명 검색시 API호출을 통해서 검색어 추천 기능 구현
+- API 호출별로 로컬 캐싱 구현
+- 입력마다 API 호출하지 않도록 API 호출 횟수를 줄이는 전략 수립 및 실행
+- API를 호출할 때 마다 console.info("calling api") 출력을 통해 콘솔창에서 API 호출 횟수 확인이 가능하도록 설정
+- 키보드만으로 추천 검색어들로 이동 가능하도록 구현
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# 실행방법
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. 먼저 [서버](https://github.com/walking-sunset/assignment-api)를 실행시켜 줍니다.
+2. `npm install`
+3. `npm start`
 
-### `npm test`
+# API 호출별로 로컬 캐싱 구현
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```js
+//pages/Search.tsx
+const getSearchList = useCallback(async (query: string) => {
+	const { getCache, saveCache, deleteCache } = caching();
+	if (query === '') {
+		setSearchList([]);
+		return;
+	}
 
-### `npm run build`
+	const { data: cache, expire } = getCache(query) ?? {};
+	const now = new Date();
+	const isExpire = now.getTime() > expire;
+	setSelectIndex(-1);
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+	//캐싱된 데이터가 있으며 expire되지 않은 경우
+	if (cache && !isExpire) return setSearchList(cache);
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+	//expire된 경우 캐싱된 데이터 삭제
+	if (isExpire) deleteCache(query);
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+	const data = await getSearch(query);
+	const day_3 = 86400000;
 
-### `npm run eject`
+	saveCache(query, data, day_3);
+	setSearchList(data);
+}, []);
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+//utils/caching.tsx
+export function caching(): Caching {
+	const now = new Date();
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+	function saveCache(key: string, data: SearchItem[], ttl: number = 0) {
+		localStorage.setItem(
+			key,
+			JSON.stringify({ data, expire: now.getTime() + ttl })
+		);
+	}
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+	function getCache(key: string) {
+		const list = localStorage.getItem(key);
+		if (list) return JSON.parse(list);
+	}
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+	function deleteCache(key: string) {
+		localStorage.removeItem(key);
+	}
 
-## Learn More
+	return { saveCache, getCache, deleteCache };
+}
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+localStorage에 검색어와 검색 데이터를 저장하고, 만약 검색어에 해당하는 캐싱된 데이터가 없는 경우 api를 호출합니다.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+캐싱은 localStorage로 하였으며 caching이라는 util함수를 만들어 사용했습니다. getCache시 ttl(time-to-live)을 받고 getCache시에 시간을 확인 후 expire을 구현해 주었습니다.
+
+# 호출 횟수를 줄이는 전략
+
+```Js
+//hooks/useDebounce.tsx
+function useDebounce<T>(func: () => void, delay: number, deps: T) {
+const callback = useCallback(func, [deps]);
+
+useEffect(() => {
+	const timer = setTimeout(() => {
+		callback();
+	}, delay);
+
+	return () => {
+		clearTimeout(timer);
+	};
+}, [callback, delay]);
+}
+
+
+//pages/Search.tsx
+useDebounce(
+	() => {
+		const trimQuery = inputValue.trim();
+		getSearchList(trimQuery);
+	},
+	500,
+	inputValue.trim()
+);
+```
+
+**useDebounce**란 hook을 만들고 inputValue가 변경될때마다 debounce가 작동하여 키보드에 입력을 멈추고 500ms뒤에 추천 검색어를 가져오게 만들었습니다. 검색어 앞뒤의 띄어쓰기가 있을경우 같은 내용의 호출이 생기므로 trim()으로 삭제후 리스트를 가져왔습니다.
+
+# 키보드 만으로 추천 검색어들로 이동 구현
+
+```js
+const listTopDownHandler = useCallback(
+	(e: any) => {
+		const up = e.keyCode === 38;
+		const down = e.keyCode === 40;
+
+		const firstIndex = 0;
+		const lastIndex = searchList.length - 1;
+
+		if (up) {
+			if (selectIndex === firstIndex) return setSelectIndex(lastIndex);
+			setSelectIndex((prev) => prev - 1);
+		}
+		if (down) {
+			selectIndex >= lastIndex
+				? setSelectIndex(0)
+				: setSelectIndex((prev) => prev + 1);
+		}
+	},
+	[selectIndex, searchList]
+);
+```
+
+selectIndex값을 useState로 저장하고 input의 onKeyDown시 키보드의 위, 아래키를 눌렀을때 상태값을 변하게 만들었습니다.
