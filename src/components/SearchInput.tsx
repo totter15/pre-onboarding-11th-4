@@ -2,7 +2,13 @@ import { SearchOutlined } from '@ant-design/icons';
 import { FormBox, InputBox, InputButton } from '../styles/SearchInput.style';
 import { useState } from 'react';
 
-function SearchInput({ onChange }: { onChange: (e: any) => void }) {
+function SearchInput({
+	onChange,
+	onKeyDown,
+}: {
+	onChange: (e: any) => void;
+	onKeyDown: (e: any) => void;
+}) {
 	const [isFocus, setIsFocus] = useState(false);
 	return (
 		<FormBox
@@ -15,6 +21,7 @@ function SearchInput({ onChange }: { onChange: (e: any) => void }) {
 			)}
 			<InputBox
 				onChange={onChange}
+				onKeyDown={onKeyDown}
 				type='search'
 				placeholder='질환명을 입력해 주세요.'
 			/>

@@ -34,7 +34,8 @@ function Search() {
 	}, []);
 
 	let timer: ReturnType<typeof setTimeout>;
-	function debounce(query: string) {
+	function debounce(e: any) {
+		const query = e.target.value;
 		if (timer) clearTimeout(timer);
 		timer = setTimeout(() => {
 			const trimQuery = query;
@@ -43,15 +44,17 @@ function Search() {
 	}
 
 	const listTopDownHandler = useCallback(
-		(type: string) => {
+		(e: any) => {
+			const up = e.keyCode === 38;
+			const down = e.keyCode === 40;
 			const firstIndex = 0;
 			const lastIndex = searchList.length - 1;
 
-			if (type === 'up') {
+			if (up) {
 				if (selectIndex === firstIndex) return setSelectIndex(lastIndex);
 				setSelectIndex((prev) => prev - 1);
 			}
-			if (type === 'down') {
+			if (down) {
 				selectIndex >= lastIndex
 					? setSelectIndex(0)
 					: setSelectIndex((prev) => prev + 1);
@@ -60,18 +63,6 @@ function Search() {
 		[selectIndex, searchList]
 	);
 
-	function onChange(e: any) {
-		const { keyCode, target } = e;
-		const up = 38;
-		const down = 40;
-
-		if (keyCode === up || keyCode === down) {
-			listTopDownHandler(keyCode === up ? 'up' : 'down');
-		} else {
-			debounce(target.value);
-		}
-	}
-
 	return (
 		<Layout>
 			<TitleBox>
@@ -79,7 +70,7 @@ function Search() {
 				<br />
 				온라인으로 참여하기
 			</TitleBox>
-			<SearchInput onChange={onChange} />
+			<SearchInput onChange={debounce} onKeyDown={listTopDownHandler} />
 			<RecommendList searchList={searchList} selectIndex={selectIndex} />
 		</Layout>
 	);
