@@ -15,11 +15,11 @@ function Search() {
 
 	useDebounce(
 		() => {
-			const trimQuery = inputValue?.trim();
+			const trimQuery = inputValue.trim();
 			getSearchList(trimQuery);
 		},
 		500,
-		inputValue
+		inputValue.trim()
 	);
 
 	const getSearchList = useCallback(async (query: string) => {
@@ -33,6 +33,7 @@ function Search() {
 		const now = new Date();
 		const isExpire = now.getTime() > expire;
 
+		setSelectIndex(-1);
 		if (cache && !isExpire) return setSearchList(cache);
 
 		if (isExpire) deleteCache(query);
@@ -41,13 +42,12 @@ function Search() {
 
 		saveCache(query, data, day_3);
 		setSearchList(data);
-		setSelectIndex(-1);
 	}, []);
 
 	const listTopDownHandler = useCallback(
-		(e: React.KeyboardEvent<HTMLInputElement>) => {
-			const up = e.key === 'ArrowUp';
-			const down = e.key === 'ArrowDown';
+		(e: any) => {
+			const up = e.keyCode === 38;
+			const down = e.keyCode === 40;
 
 			const firstIndex = 0;
 			const lastIndex = searchList.length - 1;
