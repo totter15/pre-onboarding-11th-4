@@ -9,14 +9,16 @@ import { SearchOutlined } from '@ant-design/icons';
 function RecommendList({
 	searchList,
 	selectIndex,
+	value,
 }: {
 	searchList: SearchItem[];
 	selectIndex: number;
+	value: string;
 }) {
 	return (
 		<RecommendListBox>
 			<RecommendListTitle>
-				{!!searchList.length ? '추천 검색어' : '검색어 없음'}
+				{!!value ? '추천 검색어' : '검색어 없음'}
 			</RecommendListTitle>
 
 			{searchList?.map((search, index) => (

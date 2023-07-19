@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { getSearch } from '../apis/search';
 import { SearchItem } from '../apis/search';
 import RecommendList from '../components/RecommendList';
@@ -12,6 +12,15 @@ function Search() {
 	const [searchList, setSearchList] = useState<SearchItem[]>([]);
 	const [selectIndex, setSelectIndex] = useState<number>(-1);
 	const [inputValue, setInputValue] = useState<string>('');
+
+	useDebounce(
+		() => {
+			const trimQuery = inputValue?.trim();
+			getSearchList(trimQuery);
+		},
+		500,
+		inputValue
+	);
 
 	const getSearchList = useCallback(async (query: string) => {
 		const { getCache, saveCache, deleteCache } = caching();
@@ -36,9 +45,9 @@ function Search() {
 	}, []);
 
 	const listTopDownHandler = useCallback(
-		(e: any) => {
-			const up = e.keyCode === 38;
-			const down = e.keyCode === 40;
+		(e: React.KeyboardEvent<HTMLInputElement>) => {
+			const up = e.key === 'ArrowUp';
+			const down = e.key === 'ArrowDown';
 
 			const firstIndex = 0;
 			const lastIndex = searchList.length - 1;
@@ -56,23 +65,20 @@ function Search() {
 		[selectIndex, searchList]
 	);
 
-	const onChangeHandler = useCallback((e: any) => {
-		const value = e.target.value;
-		setInputValue(value);
-	}, []);
-
-	const onSubmitHandler = useCallback((e: any) => {
-		e.preventDefault();
-		setInputValue(e.target.search.value);
-	}, []);
-
-	useDebounce(
-		() => {
-			const trimQuery = inputValue?.trim();
-			getSearchList(trimQuery);
+	const onChangeHandler = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value;
+			setInputValue(value);
 		},
-		500,
-		inputValue
+		[]
+	);
+
+	const onSubmitHandler = useCallback(
+		(e: React.ChangeEvent<HTMLFormElement>) => {
+			e.preventDefault();
+			setInputValue(e.target.search.value);
+		},
+		[]
 	);
 
 	return (
@@ -89,7 +95,11 @@ function Search() {
 				value={inputValue}
 				selectValue={searchList[selectIndex]?.sickNm}
 			/>
-			<RecommendList searchList={searchList} selectIndex={selectIndex} />
+			<RecommendList
+				value={inputValue}
+				searchList={searchList}
+				selectIndex={selectIndex}
+			/>
 		</Layout>
 	);
 }

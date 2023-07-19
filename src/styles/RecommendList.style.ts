@@ -2,6 +2,8 @@ import { styled, css } from 'styled-components';
 
 export const RecommendListBox = styled.ul`
 	width: 100%;
+	max-height: 400px;
+	overflow: scroll;
 	box-sizing: border-box;
 	margin: 0 auto;
 	background: white;
