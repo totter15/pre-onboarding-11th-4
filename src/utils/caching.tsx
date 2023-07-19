@@ -7,9 +7,9 @@ interface Caching {
 }
 
 export function caching(): Caching {
-	const now = new Date();
-
 	function saveCache(key: string, data: SearchItem[], ttl: number = 0) {
+		const now = new Date();
+
 		localStorage.setItem(
 			key,
 			JSON.stringify({ data, expire: now.getTime() + ttl })
