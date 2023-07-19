@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { getSearch } from '../apis/search';
 import { SearchItem } from '../apis/search';
 import RecommendList from '../components/RecommendList';
@@ -8,41 +8,36 @@ import Layout from './Layout';
 import { caching } from '../utils/caching';
 
 function Search() {
-	const { getCache, saveCache } = caching();
 	const [searchList, setSearchList] = useState<SearchItem[]>([]);
 	const [selectIndex, setSelectIndex] = useState<number>(-1);
+	const queryBefore = useRef<string>('');
 
-	const getSearchList = useCallback(
-		(function () {
-			let queryBefore = '';
+	const getSearchList = useCallback(async (query: string) => {
+		const { getCache, saveCache } = caching();
 
-			return async function (query: string) {
-				if (query === queryBefore) return;
-				if (query === '') {
-					setSearchList([]);
-					return;
-				}
+		if (query === queryBefore.current) return;
+		if (query === '') {
+			setSearchList([]);
+			return;
+		}
 
-				const cache = getCache(query);
-				if (cache) {
-					setSearchList(cache);
-				} else {
-					const data = await getSearch(query);
-					saveCache(query, data);
-					setSearchList(data);
-					setSelectIndex(-1);
-				}
-				queryBefore = query;
-			};
-		})(),
-		[]
-	);
+		const cache = getCache(query);
+		if (cache) {
+			setSearchList(cache);
+		} else {
+			const data = await getSearch(query);
+			saveCache(query, data);
+			setSearchList(data);
+			setSelectIndex(-1);
+		}
+		queryBefore.current = query;
+	}, []);
 
 	let timer: ReturnType<typeof setTimeout>;
 	function debounce(query: string) {
 		if (timer) clearTimeout(timer);
 		timer = setTimeout(() => {
-			const trimQuery = query.trim();
+			const trimQuery = query;
 			getSearchList(trimQuery);
 		}, 500);
 	}
@@ -65,7 +60,7 @@ function Search() {
 		[selectIndex, searchList]
 	);
 
-	function onKeyDown(e: any) {
+	function onChange(e: any) {
 		const { keyCode, target } = e;
 		const up = 38;
 		const down = 40;
@@ -84,7 +79,7 @@ function Search() {
 				<br />
 				온라인으로 참여하기
 			</TitleBox>
-			<SearchInput onKeyDown={onKeyDown} />
+			<SearchInput onChange={onChange} />
 			<RecommendList searchList={searchList} selectIndex={selectIndex} />
 		</Layout>
 	);
