@@ -5,14 +5,20 @@ import { useState } from 'react';
 function SearchInput({
 	onChange,
 	onKeyDown,
+	onSubmit,
+	value,
+	selectValue,
 }: {
 	onChange: (e: any) => void;
 	onKeyDown: (e: any) => void;
+	onSubmit: (e: any) => void;
+	value: string;
+	selectValue: string | undefined;
 }) {
 	const [isFocus, setIsFocus] = useState(false);
 	return (
 		<FormBox
-			onSubmit={(e) => e.preventDefault()}
+			onSubmit={onSubmit}
 			onFocus={() => setIsFocus(true)}
 			onBlur={() => setIsFocus(false)}
 		>
@@ -20,9 +26,11 @@ function SearchInput({
 				<SearchOutlined style={{ color: '#A7AFB7', fontSize: '1.125rem' }} />
 			)}
 			<InputBox
+				value={selectValue || value}
 				onChange={onChange}
 				onKeyDown={onKeyDown}
 				type='search'
+				name='search'
 				placeholder='질환명을 입력해 주세요.'
 			/>
 			<InputButton>

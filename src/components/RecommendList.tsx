@@ -20,7 +20,7 @@ function RecommendList({
 			</RecommendListTitle>
 
 			{searchList?.map((search, index) => (
-				<RecommendCard $select={index === selectIndex}>
+				<RecommendCard $select={index === selectIndex} key={search.sickCd}>
 					<SearchOutlined
 						style={{ color: '#A7AFB7', fontSize: '1.125rem', marginRight: 10 }}
 					/>
