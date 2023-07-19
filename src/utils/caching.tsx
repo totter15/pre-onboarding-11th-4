@@ -5,7 +5,7 @@ interface Caching {
 	getCache: (query: string) => SearchItem[];
 }
 
-export function useCaching(): Caching {
+export function caching(): Caching {
 	function saveCache(query: string, data: SearchItem[]) {
 		localStorage.setItem(query, JSON.stringify(data));
 	}

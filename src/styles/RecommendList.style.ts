@@ -1,7 +1,7 @@
 import { styled, css } from 'styled-components';
 
 export const RecommendListBox = styled.ul`
-	width: 500px;
+	width: 100%;
 	box-sizing: border-box;
 	margin: 0 auto;
 	background: white;
