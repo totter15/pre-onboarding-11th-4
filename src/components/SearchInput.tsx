@@ -32,6 +32,7 @@ function SearchInput({
 				type='search'
 				name='search'
 				placeholder='질환명을 입력해 주세요.'
+				autoComplete='off'
 			/>
 			<InputButton>
 				<SearchOutlined style={{ fontSize: 21, color: 'white' }} />
