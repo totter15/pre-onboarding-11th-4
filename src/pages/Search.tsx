@@ -10,27 +10,27 @@ import { caching } from '../utils/caching';
 function Search() {
 	const [searchList, setSearchList] = useState<SearchItem[]>([]);
 	const [selectIndex, setSelectIndex] = useState<number>(-1);
-	const queryBefore = useRef<string>('');
 
 	const getSearchList = useCallback(async (query: string) => {
-		const { getCache, saveCache } = caching();
-
-		if (query === queryBefore.current) return;
+		const { getCache, saveCache, deleteCache } = caching();
 		if (query === '') {
 			setSearchList([]);
 			return;
 		}
 
-		const cache = getCache(query);
-		if (cache) {
-			setSearchList(cache);
-		} else {
-			const data = await getSearch(query);
-			saveCache(query, data);
-			setSearchList(data);
-			setSelectIndex(-1);
-		}
-		queryBefore.current = query;
+		const { data: cache, expire } = getCache(query) ?? {};
+		const now = new Date();
+		const isExpire = now.getTime() > expire;
+
+		if (cache && !isExpire) return setSearchList(cache);
+
+		if (isExpire) deleteCache(query);
+		const data = await getSearch(query);
+		const day_3 = 86400000;
+
+		saveCache(query, data, day_3);
+		setSearchList(data);
+		setSelectIndex(-1);
 	}, []);
 
 	let timer: ReturnType<typeof setTimeout>;
@@ -38,7 +38,7 @@ function Search() {
 		const query = e.target.value;
 		if (timer) clearTimeout(timer);
 		timer = setTimeout(() => {
-			const trimQuery = query;
+			const trimQuery = query.trim();
 			getSearchList(trimQuery);
 		}, 500);
 	}
