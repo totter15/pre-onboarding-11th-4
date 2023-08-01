@@ -7,7 +7,11 @@
 
 <br/>
 
-# 구현 목표
+# 프로젝트 설명
+
+[한국임상정보](https://clinicaltrialskorea.com/)의 검색창을 클론코딩한 프로젝트 입니다. 검색어에 따른 데이터를 캐싱해하고, 검색시 debounce를 적용하여 api호출횟수를 줄이고자 했습니다.
+
+## 구현 목표
 
 - 질환명 검색시 API호출을 통해서 검색어 추천 기능 구현
 - API 호출별로 로컬 캐싱 구현
@@ -15,17 +19,31 @@
 - API를 호출할 때 마다 console.info("calling api") 출력을 통해 콘솔창에서 API 호출 횟수 확인이 가능하도록 설정
 - 키보드만으로 추천 검색어들로 이동 가능하도록 구현
 
-<br/>
+## 기술 스택
 
-# 실행방법
+HTML, CSS, Javascript, Typescript, React, Git
 
-> 1.  먼저 [서버](https://github.com/walking-sunset/assignment-api)를 실행시켜 줍니다.
-> 2.  `npm install`
-> 3.  `npm start`
+## 폴더 구조
 
-<br/>
+<pre>
+.
+├── apis
+├── components
+├── hooks
+├── pages
+├── styles
+└── utils
+</pre>
 
-# 기능 구현 설명
+## 실행방법
+
+> 먼저 [서버](https://github.com/walking-sunset/assignment-api)를 실행시켜 줍니다.
+
+> `npm install`
+
+> `npm start`
+
+## 기능 구현 설명
 
 ### API 호출별로 로컬 캐싱 구현
 
